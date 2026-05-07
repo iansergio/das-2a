@@ -8,7 +8,7 @@ from triggers.extract_estoque_movimentacao import app as extract_estoque_movimen
 from triggers.extract_estoque_saldo import app as extract_estoque_saldo
 from triggers.extract_pedido_item import app as extract_pedido_item
 from triggers.extract_pedido import app as extract_pedido
-from trigger.extract_produto import app as extract_produto
+from triggers.extract_produto import app as extract_produto
 from triggers.extract_regiao import app as extract_regiao
 from triggers.extract_representante import app as extract_representante
 from triggers.extract_titulo_receber import app as extract_titulo_receber
