@@ -7,6 +7,7 @@ from triggers.extract_categoria_produto import app as extract_categoria_produto
 from triggers.extract_estoque_movimentacao import app as extract_estoque_movimentacao
 from triggers.extract_estoque_saldo import app as extract_estoque_saldo
 
+
 app = func.FunctionApp()
 app.register_functions(extract_cliente)
 app.register_functions(extract_entrega)
