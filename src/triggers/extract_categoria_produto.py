@@ -12,4 +12,4 @@ def extract_categoria_produto(timer: func.TimerRequest) -> None:
     user = os.getenv("SQL_USER_SOURCE")
     password = os.getenv("SQL_PASSWORD_SOURCE")
 
-    logging.info(f"Server: {server} \n Database: {db} \n User: {user} \n Password: {password}")
+    logging.info(f"\n Server: {server} \n Database: {db} \n User: {user} \n Password: {password}")
