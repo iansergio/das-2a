@@ -4,6 +4,7 @@ import os
 import datetime
 
 from sqlalchemy import create_engine, text
+from sqlalchemy.engine import URL
 
 app = func.Blueprint()
 
@@ -15,14 +16,21 @@ def extract_cliente(timer: func.TimerRequest) -> None:
     user = os.getenv("SQL_USER_SOURCE")
     password = os.getenv("SQL_PASSWORD_SOURCE")
     
-    conn_str = ("Driver={SQL Server};"
-        f"conn_strServer=tcp:{server}.database.windows.net,1433;"
-        f"Database={db};"
-        f"Uid={user};"
-        f"Pwd={password};"
+    conn_url = URL.create(
+        "mssql+pyodbc",
+        username=user,
+        password=password,
+        host=f"{server}.database.windows.net",
+        port=1433,
+        database=db,
+        query={
+            "driver": "ODBC Driver 18 for SQL Server",
+            "Encrypt": "yes",
+            "TrustServerCertificate": "no",
+        }
     )
     
-    engine = create_engine(conn_str)
+    engine = create_engine(conn_url)
     
     try:
         start = datetime.datetime.now()
