@@ -38,9 +38,9 @@ def extract_cliente(timer: func.TimerRequest) -> None:
         with engine.connect() as conn:
             res = conn.execute(text("SELECT * FROM erp.pedido"))
             
-            for row in res:
-                logging.info(row)
-                
+            rows = res.fetchall()
+            logging.info(rows)
+            
             tempo = datetime.datetime.now() - start
             logging.info(f"Tempo de execução: {tempo.total_seconds():.2f}s")
 
