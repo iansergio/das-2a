@@ -42,7 +42,7 @@ def extract_cliente(timer: func.TimerRequest) -> None:
             logging.info(rows)
             
             tempo = datetime.datetime.now() - start
-            logging.info(f"Tempo de execução: {tempo.total_seconds():.2f}s")
+            logging.info(f"Tempo de execução: {tempo.total_seconds() * 1000:.0f} ms")
 
     except Exception as e:
         logging.exception("Erro ao ler erp.pedido")
