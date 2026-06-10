@@ -71,7 +71,7 @@ def extract_cliente(timer: func.TimerRequest) -> None:
         }
     )
     
-    target_engine = create_engine(source_conn_url)
+    target_engine = create_engine(target_conn_url)
     
     try:
         with target_engine.connect() as conn:
