@@ -3,6 +3,7 @@ import logging
 import os
 import datetime
 
+import pandas as pd
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL
 
@@ -10,18 +11,20 @@ app = func.Blueprint()
 
 @app.timer_trigger(schedule="0 0 6 * * *", arg_name="timer", run_on_startup=False)
 def extract_cliente(timer: func.TimerRequest) -> None:
-    server = os.getenv("SQL_SERVER_SOURCE")
-    db = os.getenv("SQL_DATABASE_SOURCE")
-    user = os.getenv("SQL_USER_SOURCE")
-    password = os.getenv("SQL_PASSWORD_SOURCE")
+    # Source
+    source_server = os.getenv("SQL_SERVER_SOURCE")
+    source_db = os.getenv("SQL_DATABASE_SOURCE")
+    source_user = os.getenv("SQL_USER_SOURCE")
+    source_password = os.getenv("SQL_PASSWORD_SOURCE")
     
-    conn_url = URL.create(
+    source_conn_url = URL.create(
         "mssql+pyodbc",
-        username=user,
-        password=password,
-        host=server,
+        username=source_user,
+        password=source_password,
+        host=source_server,
         port=1433,
-        database=db,
+        database=source_db,
+        
         query={
             "driver": "ODBC Driver 18 for SQL Server",
             "Encrypt": "yes",
@@ -30,21 +33,51 @@ def extract_cliente(timer: func.TimerRequest) -> None:
         }
     )
     
-    engine = create_engine(conn_url)
+    source_engine = create_engine(source_conn_url)
     
     try:
         start = datetime.datetime.now()
         
-        with engine.connect() as conn:
-            res = conn.execute(text("SELECT * FROM erp.pedido"))
-            
-            rows = res.fetchall()
-            logging.info(rows)
+        with source_engine.connect() as source_conn:
+            res = source_conn.execute(text("SELECT * FROM erp.cliente"))
+            df = pd.DataFrame(res.fetchall(), columns=list(res.keys()))
             
             tempo = datetime.datetime.now() - start
-            logging.info(f"Tempo de execução: {tempo.total_seconds() * 1000:.0f} ms")
-
+            logging.info(f"Tempo de execução: {tempo.total_seconds():.2f}s")
+            
     except Exception as e:
-        logging.exception("Erro ao ler erp.pedido")
+        logging.exception("Erro ao ler erp.cliente")
         raise
     
+    # Target
+    target_server = os.getenv("SQL_SERVER_TARGET")
+    target_db = os.getenv("SQL_DATABASE_TARGET")
+    target_user = os.getenv("SQL_USER_TARGET")
+    target_password = os.getenv("SQL_PASSWORD_TARGET")
+    
+    target_conn_url = URL.create(
+        "mssql+pyodbc",
+        username=target_user,
+        password=target_password,
+        host=target_server,
+        port=1433,
+        database=target_db,
+        
+        query={
+            "driver": "ODBC Driver 18 for SQL Server",
+            "Encrypt": "yes",
+            "TrustServerCertificate": "no",
+            "Connection Timeout": "30"
+        }
+    )
+    
+    target_engine = create_engine(target_conn_url)
+    
+    try:
+        with target_engine.connect() as conn:
+            df.to_sql(name='cliente', con=target_engine, if_exists='append', schema='erp', index=False)
+            print(f"Execução finalizada. Registros: {len(df)}")
+            
+    except Exception as e:
+        logging.exception("Erro ao ler erp.cliente")
+        raise
