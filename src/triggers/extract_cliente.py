@@ -1,88 +1,29 @@
-import logging
 import os
+import logging
 from datetime import datetime, timezone
 
 import azure.functions as func
-import pandas as pd
 
-from sqlalchemy import create_engine, text
-from sqlalchemy.engine import URL
+from sql_io import get_engine, extract, load
 
 app = func.Blueprint()
 
 SOURCE_SERVER   = str(os.getenv("SQL_SOURCE_SERVER"))
 SOURCE_DB       = str(os.getenv("SQL_SOURCE_DATABASE"))
-SOURCE_TABLE    = str("cliente")
+SOURCE_TABLE    = str("cliente") # Tabela de origem do professor
 SOURCE_USER     = str(os.getenv("SQL_SOURCE_USER"))
 SOURCE_PASSWORD = str(os.getenv("SQL_SOURCE_PASSWORD"))
+
 TARGET_SERVER   = str(os.getenv("SQL_TARGET_SERVER"))
 TARGET_DB       = str(os.getenv("SQL_TARGET_DATABASE"))
-TARGET_TABLE    = str("cliente")
+TARGET_TABLE    = str("cliente") # Tabela de destino
 TARGET_USER     = str(os.getenv("SQL_TARGET_USER"))
 TARGET_PASSWORD = str(os.getenv("SQL_TARGET_PASSWORD"))
+
 BATCH_SIZE      = int("5000")
 
-def _get_engine(server: str, database: str, user: str, password: str):
-    
-    connection_url = URL.create(
-        "mssql+pyodbc",
-        host=server,
-        port=1433,
-        database=database,
-        username=user,
-        password=password,
-        
-        query={
-            "driver": "ODBC Driver 18 for SQL Server",
-            "Encrypt": "yes",
-            "TrustServerCertificate": "no",
-            "Connection Timeout": "30"
-        }
-    )
-    
-    return create_engine(connection_url)
-
-def extract(engine, table: str, batch_size: int) -> pd.DataFrame:
-    
-    query = f"""
-        SELECT * 
-        FROM erp.{table}
-    """
-
-    chunks = []
-    
-    with engine.connect() as conn:
-        for chunk in pd.read_sql(text(query), conn, chunksize=batch_size):
-            chunks.append(chunk)
-
-    df = pd.concat(chunks, ignore_index=True) if chunks else pd.DataFrame()
-    logging.info("Extração concluída: %d registros lidos de %s", len(df), table)
-    return df
-
-def load(df: pd.DataFrame, engine, table: str, batch_size: int) -> None:
-    
-    if df.empty:
-        logging.info("Nada a carregar, DataFrame vazio")
-        return
-
-    with engine.begin() as conn:
-        conn.execute(text(f"DELETE FROM erp.{table}"))
-        
-        conn.execute(text(f"SET IDENTITY_INSERT erp.{table} ON"))
-        
-        df.to_sql(
-            schema='erp',
-            name=table,
-            con=conn,
-            if_exists="append",
-            index=False,
-            chunksize=batch_size
-        )
-        
-        conn.execute(text(f"SET IDENTITY_INSERT erp.{table} OFF"))
-
 # Trigger da Azure Function
-@app.timer_trigger(schedule="25 3 * * *", arg_name="timer", run_on_startup=False)
+@app.timer_trigger(schedule="20 15 * * *", arg_name="timer", run_on_startup=False)
 def extract_cliente(timer: func.TimerRequest) -> None:
     start = datetime.now(tz=timezone.utc)
     logging.info("ETL %s iniciando em %s", TARGET_TABLE, start.isoformat())
@@ -91,8 +32,8 @@ def extract_cliente(timer: func.TimerRequest) -> None:
         logging.info("O Timer atrasou, executando agora!")
     
     try:
-        source_engine = _get_engine(SOURCE_SERVER, SOURCE_DB, SOURCE_USER, SOURCE_PASSWORD)
-        target_engine = _get_engine(TARGET_SERVER, TARGET_DB, TARGET_USER, TARGET_PASSWORD)
+        source_engine = get_engine(SOURCE_SERVER, SOURCE_DB, SOURCE_USER, SOURCE_PASSWORD)
+        target_engine = get_engine(TARGET_SERVER, TARGET_DB, TARGET_USER, TARGET_PASSWORD)
         
         df = extract(source_engine, SOURCE_TABLE, BATCH_SIZE)
         
