@@ -74,9 +74,18 @@ def extract_cliente(timer: func.TimerRequest) -> None:
     target_engine = create_engine(target_conn_url)
     
     try:
-        with target_engine.connect() as target_conn:
-            df.to_sql(name='cliente', con=target_conn, if_exists='append', schema='erp', index=False)
-            print(f"Execução finalizada. Registros: {len(df)}")
+        with target_engine.begin() as conn:
+            conn.execute(text("SET IDENTITY_INSERT erp.cliente ON"))
+
+            df.to_sql(
+                "cliente",
+                conn,
+                schema="erp",
+                if_exists="append",
+                index=False
+            )
+
+            conn.execute(text("SET IDENTITY_INSERT erp.cliente OFF"))
             
     except Exception as e:
         logging.exception("Erro ao inserir em erp.cliente")
