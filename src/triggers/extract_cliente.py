@@ -10,7 +10,7 @@ from sqlalchemy.engine import URL
 
 app = func.Blueprint()
 
-SOURCE_SERVER   = str(os.getenv("SQL_SOURCE_DATABASE"))
+SOURCE_SERVER   = str(os.getenv("SQL_SOURCE_SERVER"))
 SOURCE_DB       = str(os.getenv("SQL_SOURCE_DATABASE"))
 SOURCE_TABLE    = str("cliente")
 SOURCE_USER     = str(os.getenv("SQL_SOURCE_USER"))

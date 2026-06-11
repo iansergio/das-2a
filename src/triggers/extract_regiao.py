@@ -10,7 +10,7 @@ from sqlalchemy.engine import URL
 
 app = func.Blueprint()
 
-SOURCE_SERVER   = str(os.getenv("SQL_SOURCE_DATABASE"))
+SOURCE_SERVER   = str(os.getenv("SQL_SOURCE_SERVER"))
 SOURCE_DB       = str(os.getenv("SQL_SOURCE_DATABASE"))
 SOURCE_TABLE    = str("regiao")
 SOURCE_USER     = str(os.getenv("SQL_SOURCE_USER"))
@@ -74,7 +74,7 @@ def load(df: pd.DataFrame, engine, table: str, batch_size: int) -> None:
             chunksize=batch_size
         )
 
-@app.timer_trigger(schedule="35 2 * * *", arg_name="timer", run_on_startup=False)
+@app.timer_trigger(schedule="0 3 * * *", arg_name="timer", run_on_startup=False)
 def extract_regiao(timer: func.TimerRequest) -> None:
     start = datetime.now(tz=timezone.utc)
     logging.info("ETL %s iniciando em %s", TARGET_TABLE, start.isoformat())
