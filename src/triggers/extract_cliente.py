@@ -74,8 +74,8 @@ def extract_cliente(timer: func.TimerRequest) -> None:
     target_engine = create_engine(target_conn_url)
     
     try:
-        with target_engine.connect() as conn:
-            df.to_sql(name='cliente', con=target_engine, if_exists='append', schema='erp', index=False)
+        with target_engine.connect() as target_conn:
+            df.to_sql(name='cliente', con=target_conn, if_exists='append', schema='erp', index=False)
             print(f"Execução finalizada. Registros: {len(df)}")
             
     except Exception as e:
