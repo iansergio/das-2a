@@ -79,5 +79,5 @@ def extract_cliente(timer: func.TimerRequest) -> None:
             print(f"Execução finalizada. Registros: {len(df)}")
             
     except Exception as e:
-        logging.exception("Erro ao ler erp.cliente")
+        logging.exception("Erro ao inserir em erp.cliente")
         raise
