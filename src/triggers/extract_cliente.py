@@ -66,6 +66,8 @@ def load(df: pd.DataFrame, engine, table: str, batch_size: int) -> None:
         return
 
     with engine.begin() as conn:
+        conn.execute(text(f"DELETE FROM erp.{table}"))
+        
         conn.execute(text(f"SET IDENTITY_INSERT erp.{table} ON"))
         
         df.to_sql(
@@ -80,7 +82,7 @@ def load(df: pd.DataFrame, engine, table: str, batch_size: int) -> None:
         conn.execute(text(f"SET IDENTITY_INSERT erp.{table} OFF"))
 
 # Trigger da Azure Function
-@app.timer_trigger(schedule="0 0 6 * * *", arg_name="timer", run_on_startup=False)
+@app.timer_trigger(schedule="25 3 * * *", arg_name="timer", run_on_startup=False)
 def extract_cliente(timer: func.TimerRequest) -> None:
     start = datetime.now(tz=timezone.utc)
     logging.info("ETL %s iniciando em %s", TARGET_TABLE, start.isoformat())
