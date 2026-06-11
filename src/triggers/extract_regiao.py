@@ -66,6 +66,8 @@ def load(df: pd.DataFrame, engine, table: str, batch_size: int) -> None:
         return
 
     with engine.begin() as conn:
+        conn.execute(text(f"SET IDENTITY_INSERT erp.{table} ON"))
+        
         df.to_sql(
             schema='erp',
             name=table,
@@ -74,8 +76,11 @@ def load(df: pd.DataFrame, engine, table: str, batch_size: int) -> None:
             index=False,
             chunksize=batch_size
         )
+        
+        conn.execute(text(f"SET IDENTITY_INSERT erp.{table} OFF"))
 
-@app.timer_trigger(schedule="15 6 * * *", arg_name="timer", run_on_startup=False)
+# Trigger da Azure Function
+@app.timer_trigger(schedule="25 6 * * *", arg_name="timer", run_on_startup=False)
 def extract_regiao(timer: func.TimerRequest) -> None:
     start = datetime.now(tz=timezone.utc)
     logging.info("ETL %s iniciando em %s", TARGET_TABLE, start.isoformat())

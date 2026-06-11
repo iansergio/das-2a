@@ -66,6 +66,8 @@ def load(df: pd.DataFrame, engine, table: str, batch_size: int) -> None:
         return
 
     with engine.begin() as conn:
+        conn.execute(text(f"SET IDENTITY_INSERT erp.{table} ON"))
+        
         df.to_sql(
             schema='erp',
             name=table,
@@ -74,6 +76,8 @@ def load(df: pd.DataFrame, engine, table: str, batch_size: int) -> None:
             index=False,
             chunksize=batch_size
         )
+        
+        conn.execute(text(f"SET IDENTITY_INSERT erp.{table} OFF"))
 
 # Trigger da Azure Function
 @app.timer_trigger(schedule="0 0 6 * * *", arg_name="timer", run_on_startup=False)
