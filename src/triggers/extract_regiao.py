@@ -67,6 +67,7 @@ def load(df: pd.DataFrame, engine, table: str, batch_size: int) -> None:
 
     with engine.begin() as conn:
         df.to_sql(
+            schema='erp',
             name=table,
             con=conn,
             if_exists="append",
@@ -74,7 +75,7 @@ def load(df: pd.DataFrame, engine, table: str, batch_size: int) -> None:
             chunksize=batch_size
         )
 
-@app.timer_trigger(schedule="0 3 * * *", arg_name="timer", run_on_startup=False)
+@app.timer_trigger(schedule="15 6 * * *", arg_name="timer", run_on_startup=False)
 def extract_regiao(timer: func.TimerRequest) -> None:
     start = datetime.now(tz=timezone.utc)
     logging.info("ETL %s iniciando em %s", TARGET_TABLE, start.isoformat())

@@ -67,6 +67,7 @@ def load(df: pd.DataFrame, engine, table: str, batch_size: int) -> None:
 
     with engine.begin() as conn:
         df.to_sql(
+            schema='erp',
             name=table,
             con=conn,
             if_exists="append",
