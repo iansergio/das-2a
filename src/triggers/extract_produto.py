@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 import azure.functions as func
 
-from sql_io import get_engine, extract, load
+from shared.sql_io import get_engine, extract, load
 
 app = func.Blueprint()
 
