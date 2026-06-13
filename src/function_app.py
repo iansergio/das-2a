@@ -13,6 +13,8 @@ from triggers.extract_regiao import app as extract_regiao
 from triggers.extract_representante import app as extract_representante
 from triggers.extract_titulo_receber import app as extract_titulo_receber
 from triggers.extract_transportadora import app as extract_transportadora
+from triggers.disable_constraints import app as disable_constraints
+from triggers.enable_constraints import app as enable_constraints
 
 app = func.FunctionApp()
 
@@ -28,3 +30,5 @@ app.register_functions(extract_regiao)
 app.register_functions(extract_representante)
 app.register_functions(extract_titulo_receber)
 app.register_functions(extract_transportadora)
+app.register_functions(disable_constraints)
+app.register_functions(enable_constraints)

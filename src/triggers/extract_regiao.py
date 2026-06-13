@@ -23,7 +23,7 @@ TARGET_PASSWORD = str(os.getenv("SQL_TARGET_PASSWORD"))
 BATCH_SIZE      = int("5000")
 
 # Trigger da Azure Function
-@app.timer_trigger(schedule="0 15 * * *", arg_name="timer", run_on_startup=False)
+@app.timer_trigger(schedule="1 15 * * *", arg_name="timer", run_on_startup=False)
 def extract_regiao(timer: func.TimerRequest) -> None:
     
     start = datetime.now(tz=timezone.utc)
